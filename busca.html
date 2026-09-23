@@ -7,10 +7,10 @@
   <script>
     // Sem login, volta para a tela de autenticação
     if (sessionStorage.getItem('sigaa-prototipo-autenticado') !== 'sim') {
-      window.location.replace('login.html');
+      window.location.replace('index.html');
     }
   </script>
-  <link rel="stylesheet" href="css/estilo.css">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="container">
@@ -92,7 +92,7 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-  <script src="js/dados.js"></script>
-  <script src="js/busca.js"></script>
+  <script src="db.js"></script>
+  <script src="busca.js"></script>
 </body>
 </html>

@@ -92,7 +92,7 @@
 
   document.getElementById('botao-sair').addEventListener('click', function () {
     sessionStorage.removeItem('sigaa-prototipo-autenticado');
-    window.location.href = 'login.html';
+    window.location.href = 'index.html';
   });
 
   corpoTabela.addEventListener('click', function (evento) {
