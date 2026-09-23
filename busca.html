@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SIGAA - Busca de Alunos</title>
+  <script>
+    // Sem login, volta para a tela de autenticação
+    if (sessionStorage.getItem('sigaa-prototipo-autenticado') !== 'sim') {
+      window.location.replace('login.html');
+    }
+  </script>
+  <link rel="stylesheet" href="css/estilo.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="info-sistema">
+        <div>
+          <h1>IF Sudeste MG - SIGAA</h1>
+          <p>Sistema Integrado de Gestão de Atividades Acadêmicas</p>
+        </div>
+        <div class="sessao">
+          <span>Tempo de Sessão: 00:25</span>
+          <button type="button" id="botao-sair" class="botao-sair">SAIR</button>
+        </div>
+      </div>
+      <div class="painel-usuario">
+        <div class="dados">
+          <span><strong>Usuário:</strong> Ana Paula Souza</span>
+          <span><strong>Unidade:</strong> IF Sudeste MG</span>
+        </div>
+        <a href="#" class="modulos">▦ Módulos</a>
+      </div>
+    </header>
+
+    <main class="conteudo">
+      <form id="form-busca" class="formulario" novalidate>
+        <h2 class="titulo">Busca de Alunos</h2>
+        <div class="campos">
+          <div class="linha-campo">
+            <label for="matricula">Matrícula:</label>
+            <input id="matricula" class="campo" type="text" autocomplete="off">
+          </div>
+          <div class="linha-campo">
+            <label for="cpf">CPF:</label>
+            <input id="cpf" class="campo" type="text" inputmode="numeric" maxlength="14" placeholder="000.000.000-00" autocomplete="off">
+          </div>
+          <div class="linha-campo">
+            <label for="nome">Nome:</label>
+            <input id="nome" class="campo largo" type="text" autocomplete="off">
+          </div>
+          <div class="linha-campo">
+            <label for="curso">Curso:</label>
+            <select id="curso" class="lista">
+              <option value="">-- SELECIONE --</option>
+              <option>Engenharia Mecatrônica</option>
+              <option>Engenharia Elétrica</option>
+              <option>Eventos</option>
+              <option>Sistema de Informação</option>
+            </select>
+          </div>
+        </div>
+        <div class="acoes">
+          <button type="submit" class="botao">Buscar</button>
+          <button type="button" id="botao-limpar" class="botao">Limpar</button>
+        </div>
+      </form>
+
+      <section class="tabela-resultados" aria-labelledby="titulo-resultados">
+        <h2 id="titulo-resultados" class="titulo">Alunos Encontrados</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Matrícula</th>
+              <th>CPF</th>
+              <th>Nome</th>
+              <th>Curso</th>
+              <th class="col-acao"><span class="visualmente-oculto">Ações</span></th>
+            </tr>
+          </thead>
+          <tbody id="resultados"></tbody>
+        </table>
+        <div id="total" class="total-registros"></div>
+      </section>
+    </main>
+
+    <footer class="rodape">
+      SIGAA | Instituto Federal do Sudeste de MG - (32) 3198-1456 | Copyright © 2006-2026 - UFRN - sig17.ifsudestemg.edu.br.sig17 - v4.11.3.96
+    </footer>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+  <script src="js/dados.js"></script>
+  <script src="js/busca.js"></script>
+</body>
+</html>
