@@ -87,6 +87,37 @@
                                 <option>Sistema de Informação</option>
                             </select>
                         </div>
+                        <div class="linha-campo">
+                            <label for="campus">Campus:</label>
+                            <select id="campus" class="lista">
+                                <option value="">-- SELECIONE --</option>
+                                <option>Juiz de Fora</option>
+                                <option>Barbacena</option>
+                                <option>Rio Pomba</option>
+                                <option>Santos Dumont</option>
+                                <option>Manhuaçu</option>
+                                <option>Cataguases</option>
+                            </select>
+                        </div>
+                        <div class="linha-campo">
+                            <label for="tipo-ano">Buscar por ano de:</label>
+                            <select id="tipo-ano" class="lista">
+                                <option value="">-- SELECIONE --</option>
+                                <option value="ingresso">Ingresso</option>
+                                <option value="formacao">Formação</option>
+                            </select>
+                        </div>
+                        <div class="linha-campo">
+                            <label for="ano">Ano:</label>
+                            <input
+                                id="ano"
+                                class="campo"
+                                type="number"
+                                inputmode="numeric"
+                                placeholder="ex: 2023"
+                                autocomplete="off"
+                            />
+                        </div>
                     </div>
                     <div class="acoes">
                         <button type="submit" class="botao">Buscar</button>
@@ -110,6 +141,7 @@
                                 <th>CPF</th>
                                 <th>Nome</th>
                                 <th>Curso</th>
+                                <th>Campus</th>
                                 <th class="col-acao">
                                     <span class="visualmente-oculto"
                                         >Ações</span
@@ -120,6 +152,15 @@
                         <tbody id="resultados"></tbody>
                     </table>
                     <div id="total" class="total-registros"></div>
+                    <div class="acoes">
+                        <button
+                            type="button"
+                            id="botao-pdf-todos"
+                            class="botao"
+                        >
+                            Baixar PDF com Todos os Resultados
+                        </button>
+                    </div>
                 </section>
             </main>
 
