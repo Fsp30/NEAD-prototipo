@@ -181,6 +181,15 @@ var CODIGO_CURSO = {
     "Sistema de Informação": "SIN",
 };
 
+var CAMPI = [
+    "Juiz de Fora",
+    "Barbacena",
+    "Rio Pomba",
+    "Santos Dumont",
+    "Manhuaçu",
+    "Cataguases",
+];
+
 var ANO_ATUAL = 2026;
 var SEMESTRE_ATUAL = 1;
 
@@ -278,9 +287,18 @@ function montarHistorico(rand, curso, ano, semestre) {
             a++;
         }
     }
+    var concluiuCurso = concluidos >= grade.length;
+    var anoFormacao = null;
+    if (concluiuCurso && historico.length) {
+        anoFormacao = parseInt(
+            historico[historico.length - 1].periodo.split(".")[0],
+            10,
+        );
+    }
     return {
         disciplinas: historico,
-        concluiuCurso: concluidos >= grade.length,
+        concluiuCurso: concluiuCurso,
+        anoFormacao: anoFormacao,
     };
 }
 
@@ -318,6 +336,7 @@ var ALUNOS = BASE_ALUNOS.map(function (b, i) {
             inteiro(rand, 8000, 9999) +
             "-" +
             String(inteiro(rand, 0, 9999)).padStart(4, "0"),
+        campus: CAMPI[inteiro(rand, 0, CAMPI.length - 1)],
         vinculo:
             h.concluiuCurso &&
             h.disciplinas.every(function (d) {
@@ -325,6 +344,13 @@ var ALUNOS = BASE_ALUNOS.map(function (b, i) {
             })
                 ? "Formado"
                 : "Ativo",
+        anoFormacao:
+            h.concluiuCurso &&
+            h.disciplinas.every(function (d) {
+                return d.situacao === "Aprovado";
+            })
+                ? h.anoFormacao
+                : null,
         historico: h.disciplinas,
     };
 });
