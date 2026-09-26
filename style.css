@@ -114,15 +114,13 @@ a { color: var(--link); }
 
 .campo, .lista {
   height: 22px;
+  width: 300px;
   border: 1px solid var(--borda-campo);
   background: #FFFFFF;
   font: 12px verdana, sans-serif;
   color: var(--texto);
   padding: 0 4px;
 }
-.campo { width: 220px; }
-.campo.largo { width: 320px; }
-.lista { width: 300px; }
 .campo::placeholder { color: #8A8A8A; }
 .campo:focus, .lista:focus, .botao:focus-visible, .botao-sair:focus-visible, .botao-pdf:focus-visible {
   outline: 2px solid var(--borda-azul);
