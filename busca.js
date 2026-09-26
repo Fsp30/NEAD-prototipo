@@ -227,21 +227,8 @@
         };
     }
 
-    function gerarPdf(a) {
-        if (!window.jspdf || !window.jspdf.jsPDF) {
-            alert(
-                "Não foi possível carregar a biblioteca de PDF. Verifique a conexão com a internet e recarregue a página.",
-            );
-            return;
-        }
-
-        var doc = new window.jspdf.jsPDF({ unit: "mm", format: "a4" });
-        var margem = 15;
-        var largura = doc.internal.pageSize.getWidth();
-        var altura = doc.internal.pageSize.getHeight();
-        var indices = calcularIndices(a);
-
-        var estiloBase = {
+    function estiloTabelaAluno(margem) {
+        return {
             theme: "grid",
             margin: { left: margem, right: margem, top: 20, bottom: 20 },
             styles: {
@@ -258,7 +245,9 @@
                 fontStyle: "bold",
             },
         };
+    }
 
+    function desenharCabecalhoAluno(doc, margem, largura) {
         doc.setFont("helvetica", "bold");
         doc.setFontSize(14);
         doc.text("IF Sudeste MG - SIGAA", margem, 18);
@@ -276,6 +265,11 @@
         );
         doc.setLineWidth(0.6);
         doc.line(margem, 26, largura - margem, 26);
+    }
+
+    function desenharDadosAluno(doc, a, margem) {
+        var indices = calcularIndices(a);
+        var estiloBase = estiloTabelaAluno(margem);
 
         doc.autoTable(
             Object.assign({}, estiloBase, {
@@ -397,7 +391,9 @@
                 },
             }),
         );
+    }
 
+    function adicionarRodapePaginas(doc, margem, largura, altura) {
         var agora = new Date();
         var emissao =
             "Emitido em " +
@@ -429,6 +425,24 @@
                 { align: "right" },
             );
         }
+    }
+
+    function gerarPdf(a) {
+        if (!window.jspdf || !window.jspdf.jsPDF) {
+            alert(
+                "Não foi possível carregar a biblioteca de PDF. Verifique a conexão com a internet e recarregue a página.",
+            );
+            return;
+        }
+
+        var doc = new window.jspdf.jsPDF({ unit: "mm", format: "a4" });
+        var margem = 15;
+        var largura = doc.internal.pageSize.getWidth();
+        var altura = doc.internal.pageSize.getHeight();
+
+        desenharCabecalhoAluno(doc, margem, largura);
+        desenharDadosAluno(doc, a, margem);
+        adicionarRodapePaginas(doc, margem, largura, altura);
 
         doc.save("Historico_" + a.matricula + ".pdf");
     }
@@ -441,123 +455,18 @@
             return;
         }
 
-        var doc = new window.jspdf.jsPDF({
-            unit: "mm",
-            format: "a4",
-            orientation: "landscape",
-        });
-        var margem = 12;
+        var doc = new window.jspdf.jsPDF({ unit: "mm", format: "a4" });
+        var margem = 15;
         var largura = doc.internal.pageSize.getWidth();
         var altura = doc.internal.pageSize.getHeight();
 
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(14);
-        doc.text("IF Sudeste MG - SIGAA", margem, 16);
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(9);
-        doc.text(
-            "Relatório de Alunos Vinculados - " +
-                (filtrado
-                    ? "Resultado da busca aplicada"
-                    : "Todos os alunos cadastrados"),
-            margem,
-            21,
-        );
-        doc.setDrawColor(
-            COR_AZUL_ESCURO[0],
-            COR_AZUL_ESCURO[1],
-            COR_AZUL_ESCURO[2],
-        );
-        doc.setLineWidth(0.6);
-        doc.line(margem, 24, largura - margem, 24);
-
-        var linhas = lista.map(function (a) {
-            return [
-                a.matricula,
-                a.nome,
-                a.cpf,
-                a.curso,
-                a.campus,
-                a.anoIngresso + "." + a.semestreIngresso,
-                a.vinculo,
-                a.anoFormacao ? String(a.anoFormacao) : "-",
-            ];
+        lista.forEach(function (a, indice) {
+            if (indice > 0) doc.addPage();
+            desenharCabecalhoAluno(doc, margem, largura);
+            desenharDadosAluno(doc, a, margem);
         });
 
-        doc.autoTable({
-            theme: "grid",
-            margin: { left: margem, right: margem, top: 22, bottom: 18 },
-            startY: 29,
-            styles: {
-                font: "helvetica",
-                fontSize: 8,
-                cellPadding: 1.5,
-                lineColor: COR_BORDA,
-                lineWidth: 0.2,
-                textColor: 20,
-            },
-            headStyles: {
-                fillColor: COR_CABECALHO,
-                textColor: 20,
-                fontStyle: "bold",
-            },
-            head: [
-                [
-                    "Matrícula",
-                    "Nome",
-                    "CPF",
-                    "Curso",
-                    "Campus",
-                    "Ingresso",
-                    "Situação",
-                    "Ano Formação",
-                ],
-            ],
-            body: linhas,
-            showHead: "everyPage",
-            didParseCell: function (dado) {
-                if (
-                    dado.section === "body" &&
-                    dado.column.index === 6 &&
-                    dado.cell.raw === "Formado"
-                ) {
-                    dado.cell.styles.textColor = [30, 110, 40];
-                    dado.cell.styles.fontStyle = "bold";
-                }
-            },
-        });
-
-        var agora = new Date();
-        var emissao =
-            "Emitido em " +
-            agora.toLocaleDateString("pt-BR") +
-            " às " +
-            agora.toLocaleTimeString("pt-BR", {
-                hour: "2-digit",
-                minute: "2-digit",
-            });
-        var totalPaginas = doc.getNumberOfPages();
-        for (var pagina = 1; pagina <= totalPaginas; pagina++) {
-            doc.setPage(pagina);
-            doc.setFont("helvetica", "normal");
-            doc.setFontSize(7);
-            doc.setTextColor(80);
-            doc.text(
-                lista.length +
-                    (lista.length === 1
-                        ? " aluno listado"
-                        : " alunos listados"),
-                margem,
-                altura - 6,
-            );
-            doc.text(emissao, largura / 2, altura - 6, { align: "center" });
-            doc.text(
-                "Página " + pagina + " de " + totalPaginas,
-                largura - margem,
-                altura - 6,
-                { align: "right" },
-            );
-        }
+        adicionarRodapePaginas(doc, margem, largura, altura);
 
         doc.save(
             filtrado
