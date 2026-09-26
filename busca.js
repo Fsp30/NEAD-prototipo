@@ -56,6 +56,13 @@
         campoCpf.value = v;
     });
 
+    // Ao digitar um ano sem tipo escolhido, assume ano de ingresso
+    campoAno.addEventListener("input", function () {
+        if (campoAno.value && !campoTipoAno.value) {
+            campoTipoAno.value = "ingresso";
+        }
+    });
+
     function filtrar() {
         var matricula = semAcento(campoMatricula.value.trim());
         var cpf = somenteDigitos(campoCpf.value);
@@ -140,7 +147,6 @@
 
     form.addEventListener("submit", function (evento) {
         evento.preventDefault();
-        exibir(filtrar());
     });
 
     // Atualiza a tabela a cada tecla digitada ou opção escolhida
