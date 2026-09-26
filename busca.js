@@ -9,10 +9,13 @@
     var campoAno = document.getElementById("ano");
     var corpoTabela = document.getElementById("resultados");
     var total = document.getElementById("total");
+    var paginacao = document.getElementById("paginacao");
     var botaoPdfTodos = document.getElementById("botao-pdf-todos");
 
+    var ITENS_POR_PAGINA = 20;
     var listaAtual = ALUNOS;
     var filtroAtivo = false;
+    var paginaAtual = 1;
 
     function somenteDigitos(texto) {
         return texto.replace(/\D/g, "");
@@ -108,10 +111,18 @@
                 '<tr><td colspan="6" class="vazio">Nenhum aluno encontrado com os critérios informados.</td></tr>';
             total.textContent = "";
             total.hidden = true;
+            paginacao.innerHTML = "";
             return;
         }
 
-        corpoTabela.innerHTML = lista
+        var totalPaginas = Math.ceil(lista.length / ITENS_POR_PAGINA);
+        if (paginaAtual > totalPaginas) paginaAtual = totalPaginas;
+        if (paginaAtual < 1) paginaAtual = 1;
+
+        var inicio = (paginaAtual - 1) * ITENS_POR_PAGINA;
+        var paginaLista = lista.slice(inicio, inicio + ITENS_POR_PAGINA);
+
+        corpoTabela.innerHTML = paginaLista
             .map(function (a) {
                 return (
                     "<tr>" +
@@ -143,6 +154,45 @@
         total.textContent =
             lista.length +
             (lista.length === 1 ? " aluno encontrado" : " alunos encontrados");
+
+        renderizarPaginacao(totalPaginas);
+    }
+
+    function renderizarPaginacao(totalPaginas) {
+        if (totalPaginas <= 1) {
+            paginacao.innerHTML = "";
+            return;
+        }
+
+        paginacao.innerHTML =
+            '<button type="button" class="botao" id="botao-pagina-anterior"' +
+            (paginaAtual === 1 ? " disabled" : "") +
+            ">« Anterior</button>" +
+            "<span>Página " +
+            paginaAtual +
+            " de " +
+            totalPaginas +
+            "</span>" +
+            '<button type="button" class="botao" id="botao-pagina-proxima"' +
+            (paginaAtual === totalPaginas ? " disabled" : "") +
+            ">Próxima »</button>";
+
+        document
+            .getElementById("botao-pagina-anterior")
+            .addEventListener("click", function () {
+                if (paginaAtual > 1) {
+                    paginaAtual--;
+                    exibir(listaAtual);
+                }
+            });
+        document
+            .getElementById("botao-pagina-proxima")
+            .addEventListener("click", function () {
+                if (paginaAtual < totalPaginas) {
+                    paginaAtual++;
+                    exibir(listaAtual);
+                }
+            });
     }
 
     form.addEventListener("submit", function (evento) {
@@ -151,6 +201,7 @@
 
     // Atualiza a tabela a cada tecla digitada ou opção escolhida
     form.addEventListener("input", function () {
+        paginaAtual = 1;
         exibir(filtrar());
     });
 
@@ -159,6 +210,7 @@
         .addEventListener("click", function () {
             form.reset();
             filtroAtivo = false;
+            paginaAtual = 1;
             exibir(ALUNOS);
             campoMatricula.focus();
         });
