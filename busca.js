@@ -4,8 +4,15 @@
     var campoCpf = document.getElementById("cpf");
     var campoNome = document.getElementById("nome");
     var campoCurso = document.getElementById("curso");
+    var campoCampus = document.getElementById("campus");
+    var campoTipoAno = document.getElementById("tipo-ano");
+    var campoAno = document.getElementById("ano");
     var corpoTabela = document.getElementById("resultados");
     var total = document.getElementById("total");
+    var botaoPdfTodos = document.getElementById("botao-pdf-todos");
+
+    var listaAtual = ALUNOS;
+    var filtroAtivo = false;
 
     function somenteDigitos(texto) {
         return texto.replace(/\D/g, "");
@@ -54,6 +61,20 @@
         var cpf = somenteDigitos(campoCpf.value);
         var nome = semAcento(campoNome.value.trim());
         var curso = campoCurso.value;
+        var campus = campoCampus.value;
+        var tipoAno = campoTipoAno.value;
+        var ano = campoAno.value.trim();
+        var anoNum = ano ? parseInt(ano, 10) : null;
+
+        filtroAtivo = !!(
+            matricula ||
+            cpf ||
+            nome ||
+            curso ||
+            campus ||
+            tipoAno ||
+            ano
+        );
 
         return ALUNOS.filter(function (a) {
             if (matricula && semAcento(a.matricula).indexOf(matricula) === -1)
@@ -61,14 +82,23 @@
             if (cpf && somenteDigitos(a.cpf).indexOf(cpf) === -1) return false;
             if (nome && semAcento(a.nome).indexOf(nome) === -1) return false;
             if (curso && a.curso !== curso) return false;
+            if (campus && a.campus !== campus) return false;
+            if (tipoAno && anoNum !== null) {
+                if (tipoAno === "ingresso" && a.anoIngresso !== anoNum)
+                    return false;
+                if (tipoAno === "formacao" && a.anoFormacao !== anoNum)
+                    return false;
+            }
             return true;
         });
     }
 
     function exibir(lista) {
+        listaAtual = lista;
+
         if (lista.length === 0) {
             corpoTabela.innerHTML =
-                '<tr><td colspan="5" class="vazio">Nenhum aluno encontrado com os critérios informados.</td></tr>';
+                '<tr><td colspan="6" class="vazio">Nenhum aluno encontrado com os critérios informados.</td></tr>';
             total.textContent = "";
             total.hidden = true;
             return;
@@ -89,6 +119,9 @@
                     "</td>" +
                     "<td>" +
                     escapar(a.curso) +
+                    "</td>" +
+                    "<td>" +
+                    escapar(a.campus) +
                     "</td>" +
                     '<td class="col-acao"><button type="button" class="botao-pdf" data-matricula="' +
                     escapar(a.matricula) +
@@ -114,6 +147,7 @@
         .getElementById("botao-limpar")
         .addEventListener("click", function () {
             form.reset();
+            filtroAtivo = false;
             exibir(ALUNOS);
             campoMatricula.focus();
         });
@@ -132,6 +166,16 @@
             return a.matricula === botao.dataset.matricula;
         });
         if (aluno) gerarPdf(aluno);
+    });
+
+    botaoPdfTodos.addEventListener("click", function () {
+        if (!listaAtual || listaAtual.length === 0) {
+            alert(
+                "Não há alunos para incluir no PDF. Ajuste os critérios de busca.",
+            );
+            return;
+        }
+        gerarPdfLista(listaAtual, filtroAtivo);
     });
 
     var COR_FAIXA = [196, 210, 235]; // #C4D2EB
@@ -259,10 +303,16 @@
                 body: [
                     [rotulo("Curso"), { content: a.curso, colSpan: 3 }],
                     [
-                        rotulo("Ano/semestre de ingresso"),
-                        a.anoIngresso + "." + a.semestreIngresso,
+                        rotulo("Campus"),
+                        a.campus,
                         rotulo("Situação do vínculo"),
                         a.vinculo,
+                    ],
+                    [
+                        rotulo("Ano/semestre de ingresso"),
+                        a.anoIngresso + "." + a.semestreIngresso,
+                        rotulo("Ano de formação"),
+                        a.anoFormacao ? String(a.anoFormacao) : "-",
                     ],
                     [
                         rotulo("Carga horária cursada"),
@@ -381,6 +431,139 @@
         }
 
         doc.save("Historico_" + a.matricula + ".pdf");
+    }
+
+    function gerarPdfLista(lista, filtrado) {
+        if (!window.jspdf || !window.jspdf.jsPDF) {
+            alert(
+                "Não foi possível carregar a biblioteca de PDF. Verifique a conexão com a internet e recarregue a página.",
+            );
+            return;
+        }
+
+        var doc = new window.jspdf.jsPDF({
+            unit: "mm",
+            format: "a4",
+            orientation: "landscape",
+        });
+        var margem = 12;
+        var largura = doc.internal.pageSize.getWidth();
+        var altura = doc.internal.pageSize.getHeight();
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(14);
+        doc.text("IF Sudeste MG - SIGAA", margem, 16);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(9);
+        doc.text(
+            "Relatório de Alunos Vinculados - " +
+                (filtrado
+                    ? "Resultado da busca aplicada"
+                    : "Todos os alunos cadastrados"),
+            margem,
+            21,
+        );
+        doc.setDrawColor(
+            COR_AZUL_ESCURO[0],
+            COR_AZUL_ESCURO[1],
+            COR_AZUL_ESCURO[2],
+        );
+        doc.setLineWidth(0.6);
+        doc.line(margem, 24, largura - margem, 24);
+
+        var linhas = lista.map(function (a) {
+            return [
+                a.matricula,
+                a.nome,
+                a.cpf,
+                a.curso,
+                a.campus,
+                a.anoIngresso + "." + a.semestreIngresso,
+                a.vinculo,
+                a.anoFormacao ? String(a.anoFormacao) : "-",
+            ];
+        });
+
+        doc.autoTable({
+            theme: "grid",
+            margin: { left: margem, right: margem, top: 22, bottom: 18 },
+            startY: 29,
+            styles: {
+                font: "helvetica",
+                fontSize: 8,
+                cellPadding: 1.5,
+                lineColor: COR_BORDA,
+                lineWidth: 0.2,
+                textColor: 20,
+            },
+            headStyles: {
+                fillColor: COR_CABECALHO,
+                textColor: 20,
+                fontStyle: "bold",
+            },
+            head: [
+                [
+                    "Matrícula",
+                    "Nome",
+                    "CPF",
+                    "Curso",
+                    "Campus",
+                    "Ingresso",
+                    "Situação",
+                    "Ano Formação",
+                ],
+            ],
+            body: linhas,
+            showHead: "everyPage",
+            didParseCell: function (dado) {
+                if (
+                    dado.section === "body" &&
+                    dado.column.index === 6 &&
+                    dado.cell.raw === "Formado"
+                ) {
+                    dado.cell.styles.textColor = [30, 110, 40];
+                    dado.cell.styles.fontStyle = "bold";
+                }
+            },
+        });
+
+        var agora = new Date();
+        var emissao =
+            "Emitido em " +
+            agora.toLocaleDateString("pt-BR") +
+            " às " +
+            agora.toLocaleTimeString("pt-BR", {
+                hour: "2-digit",
+                minute: "2-digit",
+            });
+        var totalPaginas = doc.getNumberOfPages();
+        for (var pagina = 1; pagina <= totalPaginas; pagina++) {
+            doc.setPage(pagina);
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(7);
+            doc.setTextColor(80);
+            doc.text(
+                lista.length +
+                    (lista.length === 1
+                        ? " aluno listado"
+                        : " alunos listados"),
+                margem,
+                altura - 6,
+            );
+            doc.text(emissao, largura / 2, altura - 6, { align: "center" });
+            doc.text(
+                "Página " + pagina + " de " + totalPaginas,
+                largura - margem,
+                altura - 6,
+                { align: "right" },
+            );
+        }
+
+        doc.save(
+            filtrado
+                ? "Relatorio_Alunos_Filtrados.pdf"
+                : "Relatorio_Alunos_Todos.pdf",
+        );
     }
 
     exibir(ALUNOS);
