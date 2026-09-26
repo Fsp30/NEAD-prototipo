@@ -143,6 +143,11 @@
         exibir(filtrar());
     });
 
+    // Atualiza a tabela a cada tecla digitada ou opção escolhida
+    form.addEventListener("input", function () {
+        exibir(filtrar());
+    });
+
     document
         .getElementById("botao-limpar")
         .addEventListener("click", function () {
